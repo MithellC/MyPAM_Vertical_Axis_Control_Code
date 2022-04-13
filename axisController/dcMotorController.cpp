@@ -133,15 +133,17 @@ float prePositionLoopStart = 0;
 float prePositionError = 0;
 
 float pKP = 4.5;
-float pKI = 0.5;
+float pKI = 0.6;
+//float pKI = 0.006;
 float pKD = 0.1;
 
+//float pErrorWindowSize = 20000; //ms
 float pErrorWindowSize = 50; //ms
 int positionVectorListSize = (int)((positionLoopFrequency/1000.0) * pErrorWindowSize);
 std::vector<float> positionIErrorList;
 
-float posErrorMargin = 1;
 
+float posErrorMargin = 0.2;
 void dcMotorController::PIDPositionControlLoop()
 {
   float currentTime = micros();

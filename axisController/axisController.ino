@@ -77,14 +77,17 @@ void commandsCheck()
   if(comms.speedRun) sRun();
   
   if(comms.calibarteFlag)homeDCAxis();
-  
-  if (comms.VRControl && homed) dcMotor.enablePositionControl();
+
+  if (comms.VRControl && comms.velocityControl && homed) dcMotor.enableSpeedControl();
+  else if (comms.VRControl && comms.positionControl && homed) dcMotor.enablePositionControl();
+  else if (comms.VRControl && comms.forceControl && homed) dcMotor.enableForceControl();
   else if (!comms.VRControl && homed) dcMotor.enableForceControl();
 }
 
 
 void homeDCAxis()
 {
+  homed = false;
   dcMotor.enableSpeedControl();
 
   ledController.SetCalibrationState(0);
@@ -152,8 +155,10 @@ void DCMotorCrtitcalLoop()
 
   ledController.SetPos(enc.currentPos);
   ledController.LEDLoop();
-    
+  ledController.SetTraget(comms.targetPos);
+
   dcMotor.setTargetPos(comms.targetPos);
+  if (homed) dcMotor.setVelocity(comms.targetVel);
 
   if (comms.stopMovment)dcMotor.emergencyStop();
   else if (!comms.stopMovment)dcMotor.resumeControl();

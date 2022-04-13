@@ -24,11 +24,14 @@ void LEDController::LEDLoop(){
     _preLedState = ledState;
     UpdateLEDEffect();
     AnimationHandler();
+    FastLED.show();
   }
   else if(checkTimerState()){
     UpdateLEDEffect();
     AnimationHandler();
+    FastLED.show();
   }
+  
 }
 
 
@@ -77,7 +80,6 @@ void LEDController::ErrorState()
 
   fill_solid(leds, _numOfLeds, CHSV(255,255,255));
   FastLED.setBrightness(errorBrightness);
-  FastLED.show();
 }
 
 int preState = 0; 
@@ -112,7 +114,6 @@ void LEDController::CalibrationState()
   }
   
   FastLED.setBrightness(255);
-  FastLED.show();
 }
 
 
@@ -147,6 +148,12 @@ void LEDController::SetMaxTravle(int dis){
   _maxTravelDis = dis;
 }
 
+void LEDController::SetTraget(int pos){
+  if (pos > _maxTravelDis) pos = _maxTravelDis;
+  else if (pos < 0) pos = 0;
+  else  _targetPos = pos; 
+}
+
 int green = 80;
 int minBlue = 120;
 void LEDController::PlayModeState()
@@ -162,8 +169,6 @@ void LEDController::PlayModeState()
   DispPlayLEDS(currentLED, 170);
 
   FastLED.setBrightness(255);
-  FastLED.show();
-
 }
 
 int LEDController::PosToLED(int pos){
@@ -196,7 +201,6 @@ void LEDController::RainbowMode()
  
   fill_solid(leds, _numOfLeds, CHSV(rainbowHue,255,255));
   FastLED.setBrightness(255);
-  FastLED.show();
 }
 
 
@@ -245,6 +249,7 @@ void LEDController::TargetReachedAnimation(){
   if (_animationPos > 24) _animationState = none;
 }
 
+/*
 void LEDController::CalibratedAnimation(){
   _animationPos += 5;
   if(_animationPos > _maxTravelDis * 2){
@@ -274,6 +279,48 @@ void LEDController::CalibratedAnimation(){
       if (i <= maxLED && i > PosToLED(0)){
         leds[i] = CHSV(220, 255, 255);
         leds[23 - i] = CHSV(220, 255, 255);
+      }
+    }
+  }
+}*/
+
+
+void LEDController::CalibratedAnimation(){
+  int caliColour = 28;
+  _animationPos += 5;
+  if(_animationPos > _maxTravelDis * 2){
+    if (_flipAnimation){
+       _animationState = none;
+       _animationPos = 0;
+       _flipAnimation = false;
+       return;
+    }
+    _flipAnimation = true;
+    _animationPos = 0;
+  }
+
+  if(!_flipAnimation){
+    int ledPos = PosToLED(_animationPos);
+    int minLED = ledPos/100 - PosToLED(_maxTravelDis)/100;
+    for(int i = PosToLED(0); i < ledPos/100; i++){
+      if (i <= PosToLED(_maxTravelDis)/100 && i >  minLED){
+        if (i >= 0 && i <= 10){
+           leds[i] = CHSV(caliColour, 255, 255);
+         leds[23 - i] = CHSV(caliColour, 255, 255);
+        }
+      }
+    }
+  }
+
+  else{
+     int ledPos = PosToLED(_maxTravelDis - _animationPos);
+     int maxLED = PosToLED(_maxTravelDis)/100 + ledPos/100;
+     for(int i = PosToLED(_maxTravelDis)/100; i >= ledPos/100; i--){
+      if (i <= maxLED && i > PosToLED(0)){
+        if (i >= 0 && i <= 10){
+          leds[i] = CHSV(caliColour, 255, 255);
+          leds[23 - i] = CHSV(caliColour, 255, 255);
+        }
       }
     }
   }

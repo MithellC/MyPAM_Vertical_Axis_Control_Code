@@ -82,11 +82,13 @@ void Comms::commuicationHandler(String msg)
   }
   
   if (Command == "setPos") targetPos = Data.toFloat();
-  else if (Command == "setForce") targetPos = Data.toFloat();
+  else if (Command == "setForce") targetForce = Data.toFloat();
+  else if (Command == "setVel") targetVel = Data.toFloat();
   else if (Command == "vrControl") VRControl = true;
   else if (Command == "patientControl") VRControl = false;
-  else if (Command == "forceControll") { forceControl = true; positionControl = false; }
-  else if (Command == "positionControll") { forceControl = false; positionControl = true; }
+  else if (Command == "forceControll") { forceControl = true; positionControl = false; velocityControl = false;}
+  else if (Command == "positionControll") { forceControl = false; positionControl = true; velocityControl = false;}
+  else if (Command == "velocityControl") { forceControl = false; positionControl = false; velocityControl = true;}
   
   else if (Command == "stop") { stopMovment = true;}
   else if (Command == "start") { stopMovment = false;}

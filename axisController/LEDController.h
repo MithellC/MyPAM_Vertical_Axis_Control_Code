@@ -32,7 +32,8 @@ class LEDController
 
     void SetPos(int pos);
     void SetMaxTravle(int dis);
-
+    void SetTraget(int pos);
+    
     void SetCalibrationState(int state);
     void ReachedTarget();
     

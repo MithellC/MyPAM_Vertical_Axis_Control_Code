@@ -16,11 +16,13 @@ class Comms{
     void commsLoop(float currentPos, float currrentVelocity, float currentForce);
 
     float targetPos = 0;
+    float targetVel = 0;
     float targetForce = 0;
     float maxTravle = 0;
     
     bool positionControl = true;
     bool forceControl = false;
+    bool velocityControl = false;
     
     bool VRControl = false;
     
