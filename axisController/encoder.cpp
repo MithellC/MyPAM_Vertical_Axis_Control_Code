@@ -1,12 +1,5 @@
 #include "encoder.h"
 
-float preVelcoityReading = 0;
-float currentVelcoityReading = 0;
-
-float preRawVecloity = 0;
-float currentRawVecloity = 0;
-float preFilteredVelocity = 0;
-
 const int numOfMADataPoint = 100;
 float MADataPoints [numOfMADataPoint];
 
@@ -60,7 +53,7 @@ void encoder::encoderLoop()
   currentTime = micros();
   currentRawVecloity = ((currentPos - prePos) / ((currentTime - preTime) / 1000000));
   if (currentRawVecloity > 400 || currentRawVecloity < - 400) currentRawVecloity = preRawVecloity;
-
+  
   for(int i = numOfMADataPoint-1; i > 0; i--){MADataPoints[i] = MADataPoints[i-1];}
   
   MADataPoints[0] = currentRawVecloity;

@@ -11,7 +11,7 @@ class dcMotorController
     dcMotorController();
     ~dcMotorController();
     void setupMotor(int motorPin1, int motorPin2, int pwmPin);
-    void setupLinearActuator(float screwPitch, float outputGearRatio, float maxVelocity, float maxAcceleration, float maxDecelration, float maxTravleDistance,int limitTopPin, int limitBottomPince);
+    void setupLinearActuator(float screwPitch, float outputGearRatio, float maxVelocity, float maxAcceleration, float maxDecelration,  float maxTravleDistance, float travleVelocity, int limitTopPin, int limitBottomPin);
     void setupController(int topForcePin, int bottomForcePin);
     void setVelocity(float desiredVelocity);
     void setForce(float desiredForce);
@@ -25,21 +25,28 @@ class dcMotorController
     void enableSpeedControl();
     void enableGravity(bool val, float gravAcceleration);
     void controlLoop();
+    
+    void PlayModeController();
+    void CalibrateArmWeight();
+    
     void PIDPositionControlLoop();
     void PIDForceControlLoop();
 
     float currentPos;
     float currentForce;
-
+    float armWeight = 0;
+    
     float bottomForceReading = 0;
     float topForceReading = 0;
-   
+  
     bool zeroed;
     
     bool overridePWMState = false;
     int overridePWM = 0;
+
+    float rawTopForce = 0;
+    float rawBottomForce = 0;
   private:
-    void calcSystemParamps(); 
     void updateMotorSpeed();
     void speedController();
     void speedControllerNew();
@@ -58,10 +65,10 @@ class dcMotorController
     float _screwPitch;
     float _outputGearRatio;
     float _maxVelocity;
+    float _travleVelocity;
     float _maxAcceleration;
     float _maxDeceleration;
     float _maxTravleDistance;
-    float _travelPerStep;
 
     float _gravAcceleration;
     bool _enableGravity;
@@ -82,7 +89,7 @@ class dcMotorController
     bool _forceControl;
     bool _speedControl;
     
-    bool _stepperIsSetup; 
+    bool _motorIsSetup; 
     bool _actuatorIsSetup; 
 
     bool _stop;

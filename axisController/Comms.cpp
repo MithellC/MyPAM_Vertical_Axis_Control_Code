@@ -18,7 +18,7 @@ void Comms::inital(){
 
 
 float preSentTime = 0;
-void Comms::commsLoop(float currentPos, float currrentVelocity, float currentForce)
+void Comms::commsLoop(float currentPos, float currrentVelocity, float currentForce, String otherData)
 {
   if (millis() > preSentTime + 10)
   {
@@ -35,7 +35,7 @@ void Comms::commsLoop(float currentPos, float currrentVelocity, float currentFor
     if (speedRun) speedRunB = "1";
     
     //String msg = "p:" + String(currentPos) + "|v:" + String(currrentVelocity) + "|f:" + String(currentForce) + "|c:" + caliStr+ "|s:" + stopStr + "|mt:" + maxTravle 
-    String msg = "p:" + String(currentPos) + "|v:" + String(currrentVelocity) + "|f:" + String(currentForce) + "|c:" + caliStr+ "|s:" + stopStr + "|mt:" + maxTravle + "|rt:" + String(runTime) + "|sp:" + speedRunB;
+    String msg = "p:" + String(currentPos) + "|v:" + String(currrentVelocity) + "|f:" + String(currentForce) + "|c:" + caliStr+ "|s:" + stopStr + "|mt:" + maxTravle + "|rt:" + String(runTime) + "|sp:" + speedRunB + "|other:" + otherData;
 
     if (gotMSG) gotMSG = false;
     sendUDPComms(msg, 55776);

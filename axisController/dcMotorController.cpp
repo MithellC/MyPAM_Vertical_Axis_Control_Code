@@ -2,7 +2,7 @@
 
 dcMotorController::dcMotorController()
 {
-  _stepperIsSetup = false;
+  _motorIsSetup = false;
   _actuatorIsSetup = false;
 
   _positionControl = true;
@@ -43,12 +43,11 @@ void dcMotorController::setupMotor(int motorPin1, int motorPin2, int pwmPin)
   pinMode(_motorPin2, OUTPUT);
   pinMode(_PWMPin, OUTPUT);
       
-  _stepperIsSetup = true;
-  
-  if(_actuatorIsSetup && _stepperIsSetup) calcSystemParamps();
+  _motorIsSetup = true;
+ 
 }
 
-void dcMotorController::setupLinearActuator(float screwPitch, float outputGearRatio, float maxVelocity, float maxAcceleration, float maxDecelration,  float maxTravleDistance, int limitTopPin, int limitBottomPin)
+void dcMotorController::setupLinearActuator(float screwPitch, float outputGearRatio, float maxVelocity, float maxAcceleration, float maxDecelration,  float maxTravleDistance, float travleVelocity, int limitTopPin, int limitBottomPin)
 {
   _screwPitch = screwPitch;
   _outputGearRatio = outputGearRatio;
@@ -56,15 +55,14 @@ void dcMotorController::setupLinearActuator(float screwPitch, float outputGearRa
   _maxAcceleration = maxAcceleration;
   _maxDeceleration = maxDecelration;
   _maxTravleDistance = maxTravleDistance;
-
+  _travleVelocity = travleVelocity;
+  
   _limitTopPin = limitTopPin;
   _limitBottomPin = limitBottomPin;
   pinMode(_limitTopPin, INPUT_PULLDOWN);
   pinMode(_limitBottomPin, INPUT_PULLDOWN);
 
   _actuatorIsSetup = true;
-
-  if(_actuatorIsSetup && _stepperIsSetup) calcSystemParamps();
 }
 
 void dcMotorController::setupController(int topForcePin, int bottomForcePin)
@@ -74,11 +72,6 @@ void dcMotorController::setupController(int topForcePin, int bottomForcePin)
   
   pinMode(_topForcePin, INPUT);
   pinMode(_bottomForcePin, INPUT);
-}
-
-void dcMotorController::calcSystemParamps()
-{
-  _travelPerStep = (((float)_stepAngle/360) * (float)_outputGearRatio * (float)_screwPitch) / (float)_microStepping;
 }
 
 
@@ -255,6 +248,7 @@ float preTopF = 0;
 void dcMotorController::readTopForce()
 { 
   float raw = (float)analogRead(_topForcePin);
+  rawTopForce = raw;
   raw = 4095 - raw;
   if(raw < 0) raw =0;
   float filtered = preTopF * (preForceWeight) + raw *(1 - preForceWeight);
@@ -269,6 +263,7 @@ float preBottomF = 0;
 void dcMotorController::readBottomForce()
 {
   float raw = (float)analogRead(_bottomForcePin);
+  rawBottomForce = raw;
   raw = 4095 - raw;
   if(raw < 0) raw =0;
   float filtered = preBottomF * (preForceWeight) + raw *(1 - preForceWeight);
@@ -505,3 +500,51 @@ else if (currentTime > preSpeedSetTime + 1000000/speedLoopFrequency){
     Serial.println(_currentPWM);
   }
 */
+
+void dcMotorController::PlayModeController(){
+  int posLimit = 7;
+  float adjustedVelcoity = _travleVelocity;
+  
+  int forceReading  = topForceReading - bottomForceReading;
+  float posError = _targetPosition - _currentPos;
+
+   if (posError > - posLimit && posError < posLimit ){
+    enablePositionControl();
+    return;
+   }
+   
+  //Traveling Up
+  if (posError > 0){
+    if(forceReading > armWeight + 100){
+      setForce(-armWeight + 100);
+      enableForceControl();
+      return;
+    }
+    else if(forceReading < armWeight) {
+      adjustedVelcoity = map(forceReading, armWeight - 60, armWeight, 0,  _travleVelocity);
+      if (adjustedVelcoity > _travleVelocity) _travleVelocity = adjustedVelcoity;
+    }
+  }
+  //Traveling Down
+  else if (posError < 0){
+    if(forceReading > armWeight) {
+      adjustedVelcoity = map(forceReading, armWeight, 0, _travleVelocity,  0);
+      if (adjustedVelcoity > _travleVelocity) _travleVelocity = adjustedVelcoity;
+    }
+
+    else if(forceReading < armWeight - 50) {
+       setForce(-armWeight - 50);
+       enableForceControl();
+       return;
+    }
+  }
+ 
+  enableSpeedControl();
+  if (posError > 0) setVelocity(adjustedVelcoity);
+  else setVelocity(-adjustedVelcoity);
+
+}
+
+void dcMotorController::CalibrateArmWeight(){
+ armWeight = topForceReading - bottomForceReading;
+}

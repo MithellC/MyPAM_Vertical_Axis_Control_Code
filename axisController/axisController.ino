@@ -44,6 +44,7 @@ void setup() {
   homeDCAxis();
 
   armWeight =  dcMotor.bottomForceReading - dcMotor.topForceReading;
+  dcMotor.CalibrateArmWeight();
   dcMotor.enableForceControl();
   dcMotor.setForce(0);
   
@@ -57,8 +58,8 @@ void dcMotorSetup(){
   dcMotor.setupMotor(in1, in2, pwmPin);
   dcMotor.setupController(forceTopPin, forceBottomPin);
   
-  //dcMotor.setupLinearActuator(screwPitch, 3, 255, 2000, 4000, 100, limitTopPin, limitBottomPin);
-  dcMotor.setupLinearActuator(screwPitch, 3, 80, 2000, 4000, 100, limitTopPin, limitBottomPin);
+  //dcMotor.setupLinearActuator(screwPitch, 3, 255, 2000, 4000, 100, 40, limitTopPin, limitBottomPin);
+  dcMotor.setupLinearActuator(screwPitch, 3, 80, 2000, 4000, 100, 40, limitTopPin, limitBottomPin);
 }
 
 
@@ -87,6 +88,10 @@ void commandsCheck()
 
 void homeDCAxis()
 {
+  delay(2000);
+  dcMotor.CalibrateArmWeight();
+  delay(2000);
+  
   homed = false;
   dcMotor.enableSpeedControl();
 
@@ -151,14 +156,21 @@ void DCMotorCrtitcalLoop()
   dcMotor.setCurrentPos(enc.currentPos);
   dcMotor.setCurrentVelcoity(enc.currentVel);
 
-  comms.commsLoop(enc.currentPos, enc.currentVel, dcMotor.topForceReading - dcMotor.bottomForceReading);
-
+  String otherSrt = String(enc.currentRawVecloity) + ":" + String(dcMotor.rawTopForce) + ":" +String(dcMotor.rawBottomForce);
+  comms.commsLoop(enc.currentPos, enc.currentVel, dcMotor.topForceReading - dcMotor.bottomForceReading, otherSrt );
+  
   ledController.SetPos(enc.currentPos);
   ledController.LEDLoop();
   ledController.SetTraget(comms.targetPos);
 
-  dcMotor.setTargetPos(comms.targetPos);
   if (homed) dcMotor.setVelocity(comms.targetVel);
+  if (homed) dcMotor.setTargetPos(comms.targetPos);
+  
+  /*if (comms.VRControl && comms.positionControl && homed) dcMotor.PlayModeController();
+  else if (homed){
+    dcMotor.setForce(0);
+    dcMotor.enableForceControl();
+  }*/
 
   if (comms.stopMovment)dcMotor.emergencyStop();
   else if (!comms.stopMovment)dcMotor.resumeControl();

@@ -13,7 +13,7 @@ class Comms{
     ~Comms();
     
     void inital();
-    void commsLoop(float currentPos, float currrentVelocity, float currentForce);
+    void commsLoop(float currentPos, float currrentVelocity, float currentForce, String otherData);
 
     float targetPos = 0;
     float targetVel = 0;

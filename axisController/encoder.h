@@ -17,7 +17,11 @@ class encoder
   float currentVel = 0;
   
   bool encReady = false; 
-
+  
+  float preRawVecloity = 0;
+  float currentRawVecloity = 0;
+  float preFilteredVelocity = 0;
+  
  private:   
   float lowPassFilter(float rawVelcoity);
   float preWeightFilter(float rawVelcoity);
@@ -38,6 +42,7 @@ class encoder
 
   int limitBottomPin = 25;
   int limitTopPin = 26;
+
 };
 
 #endif
